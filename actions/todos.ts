@@ -22,9 +22,6 @@ export async function createTodo(formData: FormData) {
   }
 
   try {
-    // Optional: add delay to see optimistic updates
-    // await new Promise(resolve => setTimeout(resolve, 1000));
-    
     // Insert the new todo into the database
     await db.insert(todos).values({
       title,
@@ -36,6 +33,7 @@ export async function createTodo(formData: FormData) {
     revalidatePath("/todos");
     return { success: true };
   } catch (error) {
+    console.error("Error creating todo:", error);
     return { error: "Failed to create todo" };
   }
 }
@@ -74,6 +72,7 @@ export async function toggleTodo(formData: FormData) {
     revalidatePath("/todos");
     return { success: true };
   } catch (error) {
+    console.error("Error toggling todo:", error);
     return { error: "Failed to toggle todo" };
   }
 }
