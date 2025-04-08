@@ -2,10 +2,9 @@
 
 import { auth } from "@/lib/auth"
 import Link from "next/link"
-import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
 
-export function AdminNavEntry() {
+export function AdminLink() {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
@@ -19,8 +18,11 @@ export function AdminNavEntry() {
   if (!isAdmin) return null
 
   return (
-    <Link href="/admin">
-      <Button variant="ghost">Admin</Button>
+    <Link 
+      href="/admin" 
+      className="text-sm font-medium text-gray-700 hover:text-gray-900"
+    >
+      Admin
     </Link>
   )
 }
