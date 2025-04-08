@@ -2,9 +2,8 @@
 import { eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { auth } from "@/lib/auth"
 import { db } from "@/database/db"
-import { todos } from "@/database/schema"
+import { todos, sessions, users } from "@/database/schema"
 import { z } from "zod"
 
 // Validation schema
@@ -15,7 +14,9 @@ const TodoSchema = z.object({
 export async function createTodo(prevState: any, formData: FormData) {
   // Check authentication using cookies
   const cookieStore = cookies()
-  const sessionCookie = cookieStore.get('auth_session')
+  const sessionCookie = cookieStore.getAll().find(
+    cookie => cookie.name === 'auth_session'
+  )
   
   if (!sessionCookie) {
     return { 
@@ -24,29 +25,40 @@ export async function createTodo(prevState: any, formData: FormData) {
     }
   }
 
-  // Artificial delay for development
-  await new Promise(resolve => setTimeout(resolve, 1000))
-
-  // Extract and validate title
-  const title = formData.get('title')
-  const validationResult = TodoSchema.safeParse({ title })
-
-  if (!validationResult.success) {
-    return {
-      success: false,
-      error: validationResult.error.errors[0].message
-    }
-  }
-
   try {
-    // Here you might need to add logic to get the current user ID
-    // This depends on how Better Auth stores user information in the session
-    const userId = ""; // TODO: Replace with actual user ID retrieval
+    // Find the session and associated user
+    const session = await db.query.sessions.findFirst({
+      where: (sessions, { eq }) => eq(sessions.token, sessionCookie.value),
+      with: {
+        user: true
+      }
+    })
+
+    if (!session) {
+      return { 
+        success: false, 
+        error: "Invalid session" 
+      }
+    }
+
+    // Artificial delay for development
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Extract and validate title
+    const title = formData.get('title')
+    const validationResult = TodoSchema.safeParse({ title })
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        error: validationResult.error.errors[0].message
+      }
+    }
 
     // Insert todo for the current user
     await db.insert(todos).values({
       title: title as string,
-      userId: userId,
+      userId: session.userId,
       completed: false
     })
 
@@ -58,6 +70,7 @@ export async function createTodo(prevState: any, formData: FormData) {
       error: null 
     }
   } catch (error) {
+    console.error(error)
     return { 
       success: false, 
       error: "Failed to create todo" 
@@ -68,7 +81,9 @@ export async function createTodo(prevState: any, formData: FormData) {
 export async function toggleTodo(formData: FormData) {
   // Check authentication using cookies
   const cookieStore = cookies()
-  const sessionCookie = cookieStore.get('auth_session')
+  const sessionCookie = cookieStore.getAll().find(
+    cookie => cookie.name === 'auth_session'
+  )
   
   if (!sessionCookie) {
     return { 
@@ -77,10 +92,25 @@ export async function toggleTodo(formData: FormData) {
     }
   }
 
-  const id = formData.get("id") as string
-  const completed = formData.get("completed") === "true"
-
   try {
+    // Find the session and associated user
+    const session = await db.query.sessions.findFirst({
+      where: (sessions, { eq }) => eq(sessions.token, sessionCookie.value),
+      with: {
+        user: true
+      }
+    })
+
+    if (!session) {
+      return { 
+        success: false, 
+        error: "Invalid session" 
+      }
+    }
+
+    const id = formData.get("id") as string
+    const completed = formData.get("completed") === "true"
+
     // Update todo
     await db.update(todos)
       .set({ completed: !completed })
@@ -104,7 +134,9 @@ export async function toggleTodo(formData: FormData) {
 export async function deleteTodo(formData: FormData) {
   // Check authentication using cookies
   const cookieStore = cookies()
-  const sessionCookie = cookieStore.get('auth_session')
+  const sessionCookie = cookieStore.getAll().find(
+    cookie => cookie.name === 'auth_session'
+  )
   
   if (!sessionCookie) {
     return { 
@@ -113,9 +145,24 @@ export async function deleteTodo(formData: FormData) {
     }
   }
 
-  const id = formData.get("id") as string
-
   try {
+    // Find the session and associated user
+    const session = await db.query.sessions.findFirst({
+      where: (sessions, { eq }) => eq(sessions.token, sessionCookie.value),
+      with: {
+        user: true
+      }
+    })
+
+    if (!session) {
+      return { 
+        success: false, 
+        error: "Invalid session" 
+      }
+    }
+
+    const id = formData.get("id") as string
+
     // Delete todo
     await db.delete(todos)
       .where(eq(todos.id, id))
