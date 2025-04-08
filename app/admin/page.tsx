@@ -1,19 +1,33 @@
 import { desc } from "drizzle-orm"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import { db } from "@/database/db"
-import { todos } from "@/database/schema"
+import { todos, sessions } from "@/database/schema"
 import { Button } from "@/components/ui/button"
 import { deleteTodo } from "@/actions/todos"
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPage() {
-  // Authorization check
-  const session = await auth.getSession()
+  // Check authentication using cookies
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get('auth_session')
   
-  // Redirect if not authenticated or not an admin
-  if (!session || session.user.role !== 'admin') {
+  // If no session cookie, redirect
+  if (!sessionCookie) {
+    redirect('/auth/login')
+  }
+
+  // Find the session and check user role
+  const session = await db.query.sessions.findFirst({
+    where: (sessions, { eq }) => eq(sessions.token, sessionCookie.value),
+    with: {
+      user: true
+    }
+  })
+
+  // Redirect if no session or user is not an admin
+  if (!session || session.user.email !== 'your-admin-email@example.com') {
     redirect('/') // or to a not authorized page
   }
 
