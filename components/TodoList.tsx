@@ -7,6 +7,7 @@ import { TodoItem } from "./TodoItem"
 import { createTodo } from "@/actions/todos"
 
 export function TodoList({ todos: initialTodos }: { todos: Todo[] }) {
+  // Remove the unused setTodos or use it if needed
   const [todos, setTodos] = useState(initialTodos)
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
@@ -21,7 +22,6 @@ export function TodoList({ todos: initialTodos }: { todos: Todo[] }) {
   async function handleCreateTodo(formData: FormData) {
     setError(null)
     const title = formData.get("title") as string
-    
     if (!title || title.trim() === '') {
       setError("Title cannot be empty")
       return
@@ -48,9 +48,9 @@ export function TodoList({ todos: initialTodos }: { todos: Todo[] }) {
   
   return (
     <div className="space-y-4">
-      <form 
+      <form
         ref={formRef}
-        action={handleCreateTodo} 
+        action={handleCreateTodo}
         className="flex gap-2 items-stretch"
       >
         <div className="flex-1">
@@ -65,13 +65,12 @@ export function TodoList({ todos: initialTodos }: { todos: Todo[] }) {
           Add
         </Button>
       </form>
-      
       <ul className="space-y-2">
         {optimisticTodos.map((todo) => (
-          <TodoItem 
-            key={todo.id} 
-            todo={todo} 
-            optimistic={todo.optimistic as boolean} 
+          <TodoItem
+            key={todo.id}
+            todo={todo}
+            optimistic={todo.optimistic as boolean}
           />
         ))}
       </ul>
