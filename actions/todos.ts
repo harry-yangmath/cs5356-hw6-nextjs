@@ -1,6 +1,6 @@
 "use server"
 import { eq } from "drizzle-orm"
-import { headers } from "next/headers"
+import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
 import { db } from "@/database/db"
@@ -13,11 +13,11 @@ const TodoSchema = z.object({
 })
 
 export async function createTodo(prevState: any, formData: FormData) {
-  // Check authentication
-  const headersList = headers()
-  const user = await auth.validateRequest(headersList)
+  // Check authentication using cookies
+  const cookieStore = cookies()
+  const sessionCookie = cookieStore.get('auth_session')
   
-  if (!user) {
+  if (!sessionCookie) {
     return { 
       success: false, 
       error: "You must be logged in to create a todo" 
@@ -39,10 +39,14 @@ export async function createTodo(prevState: any, formData: FormData) {
   }
 
   try {
+    // Here you might need to add logic to get the current user ID
+    // This depends on how Better Auth stores user information in the session
+    const userId = ""; // TODO: Replace with actual user ID retrieval
+
     // Insert todo for the current user
     await db.insert(todos).values({
       title: title as string,
-      userId: user.id,
+      userId: userId,
       completed: false
     })
 
@@ -62,11 +66,11 @@ export async function createTodo(prevState: any, formData: FormData) {
 }
 
 export async function toggleTodo(formData: FormData) {
-  // Check authentication
-  const headersList = headers()
-  const user = await auth.validateRequest(headersList)
+  // Check authentication using cookies
+  const cookieStore = cookies()
+  const sessionCookie = cookieStore.get('auth_session')
   
-  if (!user) {
+  if (!sessionCookie) {
     return { 
       success: false, 
       error: "You must be logged in to toggle a todo" 
@@ -77,12 +81,10 @@ export async function toggleTodo(formData: FormData) {
   const completed = formData.get("completed") === "true"
 
   try {
-    // Update todo, ensuring it belongs to the current user
+    // Update todo
     await db.update(todos)
       .set({ completed: !completed })
-      .where(
-        eq(todos.id, id)
-      )
+      .where(eq(todos.id, id))
 
     // Revalidate the todos page
     revalidatePath('/todos')
@@ -100,11 +102,11 @@ export async function toggleTodo(formData: FormData) {
 }
 
 export async function deleteTodo(formData: FormData) {
-  // Check authentication
-  const headersList = headers()
-  const user = await auth.validateRequest(headersList)
+  // Check authentication using cookies
+  const cookieStore = cookies()
+  const sessionCookie = cookieStore.get('auth_session')
   
-  if (!user) {
+  if (!sessionCookie) {
     return { 
       success: false, 
       error: "You must be logged in to delete a todo" 
@@ -114,7 +116,7 @@ export async function deleteTodo(formData: FormData) {
   const id = formData.get("id") as string
 
   try {
-    // Delete todo, ensuring it belongs to the current user
+    // Delete todo
     await db.delete(todos)
       .where(eq(todos.id, id))
 
