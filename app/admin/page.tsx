@@ -1,8 +1,8 @@
-import { desc } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { db } from "@/database/db"
-import { todos, sessions } from "@/database/schema"
+import { todos, sessions, users } from "@/database/schema"
 import { Button } from "@/components/ui/button"
 import { deleteTodo } from "@/actions/todos"
 
@@ -27,20 +27,19 @@ export default async function AdminPage() {
   })
 
   // Redirect if no session or user is not an admin
-  if (!session || session.user.email !== 'your-admin-email@example.com') {
-    redirect('/') // or to a not authorized page
+  if (!session?.user || session.user.email !== 'your-admin-email@example.com') {
+    redirect('/')
   }
 
-  const allTodos = await db.query.todos.findMany({
-    with: {
-      user: {
-        columns: {
-          name: true,
-        }
-      }
-    },
-    orderBy: [desc(todos.createdAt)]
-  });
+  const allTodos = await db.select({
+    id: todos.id,
+    title: todos.title,
+    user: {
+      name: users.name
+    }
+  }).from(todos)
+  .leftJoin(users, eq(todos.userId, users.id))
+  .orderBy(desc(todos.createdAt))
 
   return (
     <main className="py-8 px-4">
