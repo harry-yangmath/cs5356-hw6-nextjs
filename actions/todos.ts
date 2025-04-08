@@ -14,8 +14,10 @@ const TodoSchema = z.object({
 
 export async function createTodo(prevState: any, formData: FormData) {
   // Check authentication
-  const session = await auth.getSession()
-  if (!session) {
+  const headersList = headers()
+  const user = await auth.validateRequest(headersList)
+  
+  if (!user) {
     return { 
       success: false, 
       error: "You must be logged in to create a todo" 
@@ -40,7 +42,7 @@ export async function createTodo(prevState: any, formData: FormData) {
     // Insert todo for the current user
     await db.insert(todos).values({
       title: title as string,
-      userId: session.user.id,
+      userId: user.id,
       completed: false
     })
 
@@ -61,8 +63,10 @@ export async function createTodo(prevState: any, formData: FormData) {
 
 export async function toggleTodo(formData: FormData) {
   // Check authentication
-  const session = await auth.getSession()
-  if (!session) {
+  const headersList = headers()
+  const user = await auth.validateRequest(headersList)
+  
+  if (!user) {
     return { 
       success: false, 
       error: "You must be logged in to toggle a todo" 
@@ -97,8 +101,10 @@ export async function toggleTodo(formData: FormData) {
 
 export async function deleteTodo(formData: FormData) {
   // Check authentication
-  const session = await auth.getSession()
-  if (!session) {
+  const headersList = headers()
+  const user = await auth.validateRequest(headersList)
+  
+  if (!user) {
     return { 
       success: false, 
       error: "You must be logged in to delete a todo" 
