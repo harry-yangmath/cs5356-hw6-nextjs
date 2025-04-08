@@ -13,10 +13,8 @@ const TodoSchema = z.object({
 
 export async function createTodo(prevState: any, formData: FormData) {
   // Check authentication using cookies
-  const cookieStore = cookies()
-  const sessionCookie = cookieStore.getAll().find(
-    cookie => cookie.name === 'auth_session'
-  )
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get('auth_session')
   
   if (!sessionCookie) {
     return { 
@@ -80,10 +78,8 @@ export async function createTodo(prevState: any, formData: FormData) {
 
 export async function toggleTodo(formData: FormData) {
   // Check authentication using cookies
-  const cookieStore = cookies()
-  const sessionCookie = cookieStore.getAll().find(
-    cookie => cookie.name === 'auth_session'
-  )
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get('auth_session')
   
   if (!sessionCookie) {
     return { 
@@ -133,10 +129,8 @@ export async function toggleTodo(formData: FormData) {
 
 export async function deleteTodo(formData: FormData) {
   // Check authentication using cookies
-  const cookieStore = cookies()
-  const sessionCookie = cookieStore.getAll().find(
-    cookie => cookie.name === 'auth_session'
-  )
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get('auth_session')
   
   if (!sessionCookie) {
     return { 
