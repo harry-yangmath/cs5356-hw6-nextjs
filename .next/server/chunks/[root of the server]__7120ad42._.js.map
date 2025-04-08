@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 55, "column": 0}, "map": {"version":3,"sources":["file:///Users/harryyang/hw-6-auth-and-deploy-harry-yangmath/middleware.ts"],"sourcesContent":["\nimport { type NextRequest, NextResponse } from \"next/server\"\n\nexport async function middleware(request: NextRequest) {\n    /* Implement a redirecting middleware YOUR CODE HERE */\n\n    return NextResponse.next()\n}\n\nexport const config = {\n    runtime: \"nodejs\",\n    matcher: [/* TODO: Add paths to match */]\n}\n"],"names":[],"mappings":";;;;AACA;;AAEO,eAAe,WAAW,OAAoB;IACjD,qDAAqD,GAErD,OAAO,8HAAA,CAAA,eAAY,CAAC,IAAI;AAC5B;AAEO,MAAM,SAAS;IAClB,SAAS;IACT,SAAS,EAAgC;AAC7C","debugId":null}}]
+}
