@@ -3,8 +3,9 @@ import type { NextConfig } from "next"
 const nextConfig: NextConfig = {
   output: 'standalone',
   experimental: {
-    nodeMiddleware: true,
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['localhost', 'vercel.app']
+    }
   },
   images: {
     domains: ['localhost', 'vercel.app']
